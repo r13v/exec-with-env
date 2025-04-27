@@ -30,6 +30,7 @@ npx exec-with-env -f <envfile> <command> [args...]
 ```
 
 - `-f <envfile>`: (optional) Path to the environment file. Defaults to `.env` if not specified.
+- `-r`: (optional) Replace variables like `$VARNAME` or `${VARNAME}` in command arguments with their values from the environment.
 - `<command> [args...]`: The command to run with the loaded environment variables.
 
 ### Examples
@@ -44,6 +45,18 @@ Run a command with a custom env file:
 
 ```sh
 npx exec-with-env -f config.env echo $MY_VAR
+```
+
+Replace variables in arguments (e.g., `$HELLO`) with values from the env file:
+
+```sh
+npx exec-with-env -f .env -r echo $HELLO
+```
+
+If you have `.env` containing `HELLO=world`, this will output:
+
+```
+world
 ```
 
 If `-f` is omitted, `.env` in the current directory is used:

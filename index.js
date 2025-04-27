@@ -27,19 +27,36 @@ function printUsageAndExit() {
   process.exit(1);
 }
 
+function interpolateArg(arg, env) {
+  // Replace $VARNAME or ${VARNAME} with env value
+  return arg.replace(/\$(\w+)|\${(\w+)}/g, (match, p1, p2) => {
+    const key = p1 || p2;
+    return env[key] !== undefined ? env[key] : '';
+  });
+}
+
 // Parse arguments
 const args = process.argv.slice(2);
 
 let envFile = '.env';
 let command, commandArgs;
+let replaceVars = false;
 
 const envFlagIndex = args.indexOf('-f');
+const replaceFlagIndex = args.indexOf('-r');
 
-if (envFlagIndex !== -1) {
+if (replaceFlagIndex !== -1) {
+  // Remove the flag from args
+  args.splice(replaceFlagIndex, 1);
+  replaceVars = true;
+}
+
+const envFlagIndex2 = args.indexOf('-f');
+if (envFlagIndex2 !== -1) {
   // -f is present
-  envFile = args[envFlagIndex + 1];
-  command = args[envFlagIndex + 2];
-  commandArgs = args.slice(envFlagIndex + 3);
+  envFile = args[envFlagIndex2 + 1];
+  command = args[envFlagIndex2 + 2];
+  commandArgs = args.slice(envFlagIndex2 + 3);
 } else {
   // -f is not present
   command = args[0];
@@ -58,6 +75,10 @@ if (!fs.existsSync(envFilePath)) {
 
 const fileEnv = parseEnvFile(envFilePath);
 const combinedEnv = { ...process.env, ...fileEnv };
+
+if (replaceVars) {
+  commandArgs = commandArgs.map(arg => interpolateArg(arg, combinedEnv));
+}
 
 const child = spawn(command, commandArgs, {
   stdio: 'inherit',

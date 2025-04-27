@@ -50,3 +50,14 @@ test('merges process.env and file env, file env takes precedence', () => {
   assert.strictEqual(result.status, 0);
   assert(result.stdout.includes('fromfile'));
 });
+
+test('replaces $VARNAME and ${VARNAME} in args with env value when -r is used', () => {
+  fs.writeFileSync(TMP_ENV, 'FOO=bar\nHELLO=world');
+  const result = spawnSync('node', [CLI_PATH, '-f', TMP_ENV, '-r', 'echo', '$FOO', '${HELLO}'], {
+    encoding: 'utf8',
+  });
+  fs.unlinkSync(TMP_ENV);
+  assert.strictEqual(result.status, 0);
+  // The output may have a newline, so check includes
+  assert(result.stdout.includes('bar world') || result.stdout.includes('bar\nworld'));
+});
