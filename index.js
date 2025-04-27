@@ -42,25 +42,26 @@ let envFile = '.env';
 let command, commandArgs;
 let replaceVars = false;
 
-const envFlagIndex = args.indexOf('-f');
-const replaceFlagIndex = args.indexOf('-r');
-
-if (replaceFlagIndex !== -1) {
-  // Remove the flag from args
-  args.splice(replaceFlagIndex, 1);
-  replaceVars = true;
+// Remove all -r flags
+let filteredArgs = [];
+for (const arg of args) {
+  if (arg === '-r') {
+    replaceVars = true;
+  } else {
+    filteredArgs.push(arg);
+  }
 }
 
-const envFlagIndex2 = args.indexOf('-f');
-if (envFlagIndex2 !== -1) {
+const envFlagIndex = filteredArgs.indexOf('-f');
+if (envFlagIndex !== -1) {
   // -f is present
-  envFile = args[envFlagIndex2 + 1];
-  command = args[envFlagIndex2 + 2];
-  commandArgs = args.slice(envFlagIndex2 + 3);
+  envFile = filteredArgs[envFlagIndex + 1];
+  command = filteredArgs[envFlagIndex + 2];
+  commandArgs = filteredArgs.slice(envFlagIndex + 3);
 } else {
   // -f is not present
-  command = args[0];
-  commandArgs = args.slice(1);
+  command = filteredArgs[0];
+  commandArgs = filteredArgs.slice(1);
 }
 
 if (!envFile || !command) {

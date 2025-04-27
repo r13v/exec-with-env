@@ -61,3 +61,33 @@ test('replaces $VARNAME and ${VARNAME} in args with env value when -r is used', 
   // The output may have a newline, so check includes
   assert(result.stdout.includes('bar world') || result.stdout.includes('bar\nworld'));
 });
+
+test('works when -r is before -f', () => {
+  fs.writeFileSync(TMP_ENV, 'FOO=bar');
+  const result = spawnSync('node', [CLI_PATH, '-r', '-f', TMP_ENV, 'echo', '$FOO'], {
+    encoding: 'utf8',
+  });
+  fs.unlinkSync(TMP_ENV);
+  assert.strictEqual(result.status, 0);
+  assert(result.stdout.includes('bar'));
+});
+
+test('works when -r is after -f', () => {
+  fs.writeFileSync(TMP_ENV, 'FOO=bar');
+  const result = spawnSync('node', [CLI_PATH, '-f', TMP_ENV, '-r', 'echo', '$FOO'], {
+    encoding: 'utf8',
+  });
+  fs.unlinkSync(TMP_ENV);
+  assert.strictEqual(result.status, 0);
+  assert(result.stdout.includes('bar'));
+});
+
+test('works with multiple -r flags', () => {
+  fs.writeFileSync(TMP_ENV, 'FOO=bar');
+  const result = spawnSync('node', [CLI_PATH, '-r', '-f', TMP_ENV, '-r', 'echo', '$FOO', '-r'], {
+    encoding: 'utf8',
+  });
+  fs.unlinkSync(TMP_ENV);
+  assert.strictEqual(result.status, 0);
+  assert(result.stdout.includes('bar'));
+});
